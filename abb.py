@@ -38,6 +38,12 @@ class Robot:
         self.set_speed()
         self.set_zone()
 
+    def do_path(self, path, direction=None):
+        if not direction is None:    
+            self.send('60 {0} {1} #'.format(str(path), str(direction)))
+        else:
+            self.send('60 {0} #'.format(str(path)))
+
     def connect_motion(self, remote):        
         log.info('Attempting to connect to robot motion server at %s', str(remote))
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
