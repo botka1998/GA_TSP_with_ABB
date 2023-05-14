@@ -37,6 +37,10 @@ class Robot:
         self.set_workobject()
         self.set_speed()
         self.set_zone()
+    def check_target(self, target):
+        msg = "61 " + self.format_pose(target) + " #"
+        return bool(int(self.send(msg).split()[-1]))
+
 
     def do_path(self, path, direction=None):
         if not direction is None:    
