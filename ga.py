@@ -164,41 +164,79 @@ class Generation():
 
 
 def Visualization(best):
-    annot = 0
+    annot = 0 # koristimo da prikazemo kojim redosledom se izvrsavaju segmenti i putanje izmedju njih
+    # prelazimo u for petlji celu rutu( uzimamo target po target
     for i in range(len(best.route) - 1):
+        # iscrtavanje linija(ivice predmeta obrade)
+        # uzimamo početnu i kranju tačku i-tog segmenta
+        
+        # best.route[i] je oblika:  
+#         ("krug_20",{
+#         "targets":[[90,125 - 10,50],[90,125 - 10,50]],
+#         "direction": 0,
+#         },)
+        # uzimamo njegov 1 element:
+        # best.route[i][1] dobijamo dict:
+#         {
+#         "targets":[[90,125 - 10,50],[90,125 - 10,50]],
+#         "direction": 0,
+#         }
+        # pristupamo vrednosti "targets"
+        # best.route[i][1]['targets']
+        # dobijamo : [[90,125 - 10,50],[90,125 - 10,50]]
+        # prvi niz upisujemo u start, drugi u end
         start, end = best.route[i][1]['targets']
+        # ako je u trenutni segment tipa "linija"
+        # best.route[i][0] je string koji se sastoji od tipa segmenta(linija, kvadrat, krug) i velicine(0,1,2,...,30,33)
         if "linija" in best.route[i][0]:
+            # scatter crta tacku, crtamo tacku za pocetak i za kraj, potrebno je poslati x, y pozicije tacke (start[0],start[1])
             plt.scatter(start[0], start[1])
-            # plt.annotate(i, (start[0], start[1]))
             plt.scatter(end[0], end[1])
-            # plt.annotate(i, (start[0], start[1]))
+            
+            # crtamo liniju izmedju te 2 tacke
             plt.plot((start[0], end[0]), (start[1], end[1]))
-            plt.annotate(annot, ((start[0] + (end[0] - start[0])/2), (start[1] + (end[1] - start[1])/2)))
-            annot += 1
-
+            # dodeljujemo liniji broj, broj ce se prostorno nalaziti tacno izmedju te 2 tacke
+            plt.annotate(annot, (( (end[0] + start[0])/2 ), ( ( end[1] + start[1])/2 ) ))
+            annot += 1 # svaki put kada iscrtamo putanju povecavamo redosled za +1
+            # ukoliko je trenutni segment linija, a sledeci nije
             if not "linija" in best.route[i+1][0]:
+                # uzimamo kraj linije i pocetak sledeceg segmenta
                 start, end = best.route[i][1]['targets'][1], best.route[i+1][1]['targets'][0] 
+                # crtamo putanju od kraja linije do pocetka sledeceg segmenta i dodajemo broj kao redosled
                 plt.plot((start[0], end[0]), (start[1], end[1]))
-                plt.annotate(annot, ((start[0] + (end[0] - start[0])/2), (start[1] + (end[1] - start[1])/2)))
+                plt.annotate(annot, (( (end[0] + start[0])/2 ), ( ( end[1] + start[1])/2 ) ))
                 annot += 1
         else:
+            # ako i-ti segment nije linije znaci da je kvadrat ili krug, 
+            # za kvadrat i krug su pocetna i kranja tacka iste pa je dovoljno iscrtati samo jednu( mi radimo pocetnu)
             plt.scatter(start[0], start[1])
             if "kvadrat" in best.route[i][0]:
+                # ako je kvadrat, it ostatka stringa vadimo velicinu i vrednost npr "10" pretvaramo u tip float dobijamo 20.0
                 size = float(best.route[i][0].split('_')[-1])
+                # crtamo kvadrat, saljemo mu donji levi cosak(x,y) i visinu i sirinu
                 rect = patch.Rectangle((start[0], start[1]), size, size)
-                rect.set(fill=False)
-                plt.gca().add_patch(rect)
+                rect.set(fill=False) # kvadrat ne zelimo da ima ispunu vec samo ivice
+                plt.gca().add_patch(rect) # dodajemo prethodno definisani kvadrat na dijagram(plot)
             elif "krug" in best.route[i][0]:
+                # ukoliko je krug, isto uzimamo velicinu
                 size = float(best.route[i][0].split('_')[-1])
+                # krug se definise preko njegovog centra i poluprecnika, gore u listi targeta, krug je defininisan ofsetovano, jer kada 
+                # radimo putanju po ivici kruga, zelimo da dodjemo na ivicu a ne u njegov centar
+                # potrebno je da taj offsetovan target vratimo u centar, zato po y imamo + size /2
+                # pravimo objekat kruga, saljemo centar i radijus
                 circle = plt.Circle((start[0], start[1] + size/2), size/2)
-                circle.set(fill=False)
-                plt.gca().add_patch(circle)
+                circle.set(fill=False) # bez ispune
+                plt.gca().add_patch(circle) # dodajemo krug na dijagram
+            # ukoliko je trenutni segment krug ili kvadrat crtamo putanju do sledeceg segmenta
+            # uzimamo kraj trenutnog segmenta i pocetak sledeceg
             start, end = best.route[i][1]['targets'][1], best.route[i+1][1]['targets'][0] 
             plt.plot((start[0], end[0]), (start[1], end[1]))
-            plt.annotate(annot, ((start[0] + (end[0] - start[0])/2), (start[1] + (end[1] - start[1])/2)))
+            plt.annotate(annot, (( (end[0] + start[0])/2 ), ( ( end[1] + start[1])/2 ) ))
             annot += 1
 
-    plt.show()
+    plt.show() # prikazujemo prethodno definisan dijagram
+    
+    
         # start, end = best.route[i][1]['targets']
         # plt.scatter(start[0], start[1])
         # plt.plot(best_path[i][0],best_path[i+1][0],best_path[i][1],best_path[i+1][1])
